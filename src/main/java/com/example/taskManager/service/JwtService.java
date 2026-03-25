@@ -1,5 +1,6 @@
 package com.example.taskManager.service;
 
+import com.example.taskManager.security.UserDetailsImpl;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
@@ -36,6 +37,7 @@ public class JwtService {
     }
 
     public String generateToken(Map<String, Object> extraClaims, UserDetails userDetails) {
+        extraClaims.put("role", ((UserDetailsImpl) userDetails).getRole());
         return Jwts.builder()
                 .claims(extraClaims)
                 .subject(userDetails.getUsername())

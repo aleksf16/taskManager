@@ -1,4 +1,4 @@
-package com.example.taskManager.filter;
+package com.example.taskManager.security;
 
 import com.example.taskManager.service.JwtService;
 import jakarta.servlet.FilterChain;

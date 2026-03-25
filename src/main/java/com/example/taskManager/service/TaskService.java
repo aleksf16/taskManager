@@ -5,22 +5,29 @@ import com.example.taskManager.dto.TaskResponse;
 import com.example.taskManager.entity.*;
 import com.example.taskManager.repository.TaskRepository;
 import com.example.taskManager.repository.UserRepository;
+import com.example.taskManager.security.UserDetailsImpl;
 import jakarta.persistence.EntityNotFoundException;
-import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
-@RequiredArgsConstructor
 public class TaskService {
 
     private final TaskRepository taskRepository;
     private final UserRepository userRepository;
 
-    public TaskResponse createTask(TaskRequest request, User currentUser) {
+    @Autowired
+    public TaskService(TaskRepository taskRepository, UserRepository userRepository) {
+        this.taskRepository = taskRepository;
+        this.userRepository = userRepository;
+    }
+
+    public TaskResponse createTask(TaskRequest request, UserDetailsImpl currentUserDetails) {
         Task task = new Task();
         task.setTitle(request.getTitle());
         task.setDescription(request.getDescription());
@@ -30,7 +37,9 @@ public class TaskService {
         task.setPriority(
                 request.getPriority() != null ? request.getPriority() : TaskPriority.MEDIUM
         );
-        task.setAuthor(currentUser);
+
+        Optional<User> currentUser = userRepository.findByUsername(currentUserDetails.getUsername());
+        task.setAuthor(currentUser.get());
 
         if (request.getAssigneeId() != null) {
             User assignee = userRepository.findById(request.getAssigneeId())
@@ -48,11 +57,12 @@ public class TaskService {
         return toResponse(task);
     }
 
-    public TaskResponse updateTask(Long id, TaskRequest request, User currentUser) {
+    public TaskResponse updateTask(Long id, TaskRequest request, UserDetailsImpl currentUserDetails) {
         Task task = taskRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Task not found"));
 
-        if (isAuthorOrAdmin(task, currentUser)) {
+        Optional<User> currentUser = userRepository.findByUsername(currentUserDetails.getUsername());
+        if (isAuthorOrAdmin(task, currentUser.get())) {
             throw new AccessDeniedException("Not allowed");
         }
 
@@ -71,23 +81,33 @@ public class TaskService {
         return toResponse(updated);
     }
 
-    public void deleteTask(Long id, User currentUser) {
+    public void deleteTask(Long id, UserDetailsImpl currentUserDetails) {
         Task task = taskRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Task not found"));
-        if (isAuthorOrAdmin(task, currentUser)) {
+
+        Optional<User> currentUser = userRepository.findByUsername(currentUserDetails.getUsername());
+        if (isAuthorOrAdmin(task, currentUser.get())) {
             throw new AccessDeniedException("Not allowed");
         }
         taskRepository.delete(task);
     }
 
-    public List<TaskResponse> findTasks(TaskStatus status, Long authorId, Long assigneeId) {
+    public List<TaskResponse> findTasks(String status, Long authorId, Long assigneeId) {
         List<Task> tasks;
+
+        TaskStatus taskStatus;
+
+        if (status != null && TaskStatus.contains(status)) {
+            taskStatus = TaskStatus.valueOf(status);
+        } else {
+            taskStatus = null;
+        }
 
         if (status == null && authorId == null && assigneeId == null) {
             tasks = taskRepository.findAll();
         } else {
             tasks = taskRepository.findAll().stream()
-                    .filter(t -> status == null || t.getStatus() == status)
+                    .filter(t -> status == null || t.getStatus() == taskStatus)
                     .filter(t -> authorId == null ||
                             (t.getAuthor() != null && t.getAuthor().getId().equals(authorId)))
                     .filter(t -> assigneeId == null ||

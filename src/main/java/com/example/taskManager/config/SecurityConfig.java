@@ -1,6 +1,6 @@
 package com.example.taskManager.config;
 
-import com.example.taskManager.filter.JwtAuthenticationFilter;
+import com.example.taskManager.security.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -33,6 +33,8 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/api/public/**").permitAll()
+                        .requestMatchers("/v3/api-docs/**").permitAll()
+                        .requestMatchers("/swagger-ui/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session
