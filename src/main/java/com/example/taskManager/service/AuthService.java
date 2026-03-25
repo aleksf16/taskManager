@@ -7,6 +7,7 @@ import com.example.taskManager.entity.Role;
 import com.example.taskManager.entity.User;
 import com.example.taskManager.repository.UserRepository;
 import com.example.taskManager.security.UserDetailsImpl;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -25,17 +26,18 @@ public class AuthService {
     private final AuthenticationManager authenticationManager;
 
     public AuthResponse register(RegisterRequest request) {
-        var user = User.builder()
+        User user = User.builder()
                 .username(request.getUsername())
                 .password(passwordEncoder.encode(request.getPassword()))
+                .email(request.getEmail())
                 .role(Role.USER)
                 .build();
 
         userRepository.save(user);
 
-        var jwt = jwtService.generateToken(new UserDetailsImpl(user));
+        String jwt = jwtService.generateToken(new UserDetailsImpl(user));
 
-        return new AuthResponse(jwt, user.getUsername(), user.getRole());
+        return new AuthResponse(jwt, user.getUsername(), user.getRole(), user.getEmail());
     }
 
     public AuthResponse authenticate(AuthRequest request) {
@@ -49,9 +51,9 @@ public class AuthService {
         Optional<User> user = userRepository.findByUsername(request.getUsername());
         if (user.isPresent()) {
             String jwt = jwtService.generateToken(new UserDetailsImpl(user.get()));
-            return new AuthResponse(jwt, user.get().getUsername(), user.get().getRole());
+            return new AuthResponse(jwt, user.get().getUsername(), user.get().getRole(), user.get().getEmail());
         } else {
-            return new AuthResponse();
+            throw new EntityNotFoundException();
         }
 
     }

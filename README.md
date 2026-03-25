@@ -1,1 +1,22 @@
-# taskManager
+# Task Manager API
+
+REST API сервис для управления задачами на Spring Boot 3 с аутентификацией через JWT и фильтрацией задач по статусу, автору и исполнителю.
+
+---
+
+## Запуск проекта
+
+1. Убедись, что установлена Java 11+.
+2. Перейди в папку проекта и запусти через Maven:
+
+   ```bash
+   ./mvnw spring-boot:run
+   ```
+
+   Сервер запустится на: http://localhost:8080
+
+## Swagger UI
+
+Документация API доступна через Swagger UI: http://localhost:8080/swagger-ui/index.html
+
+Коллекция запросов Postman для тестирования API находится в корне проекта
