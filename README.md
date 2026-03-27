@@ -15,6 +15,8 @@ REST API сервис для управления задачами на Spring B
 
    Сервер запустится на: http://localhost:8080
 
+По умолчания создается профиль админа с логином и паролем 'admin'
+
 ## Swagger UI
 
 Документация API доступна через Swagger UI: http://localhost:8080/swagger-ui/index.html
