@@ -1,6 +1,8 @@
 package com.example.taskManager.exception;
 
+import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.security.auth.message.AuthException;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.validation.FieldError;
@@ -45,4 +47,11 @@ public class GlobalExceptionHandler {
                 });
         return errors;
     }
+
+    @ExceptionHandler(EntityExistsException.class)
+    @ResponseStatus(HttpStatus.CONFLICT)
+    public Map<String, String> handleAuthExceptionRequest(EntityExistsException e) {
+        return Map.of("error", e.getMessage());
+    }
+
 }

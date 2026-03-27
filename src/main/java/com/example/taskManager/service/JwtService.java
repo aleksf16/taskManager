@@ -44,6 +44,7 @@ public class JwtService {
         return Jwts.builder()
                 .claims(extraClaims)
                 .issuedAt(new Date(System.currentTimeMillis()))
+                .subject(userDetails.getUsername())
                 .expiration(new Date(System.currentTimeMillis() + jwtExpiration))
                 .signWith(getSigningKey())
                 .compact();
