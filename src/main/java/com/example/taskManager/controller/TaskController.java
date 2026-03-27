@@ -39,7 +39,7 @@ public class TaskController {
     @PutMapping("/{id}")
     @PreAuthorize("hasAnyRole('USER','ADMIN')")
     public TaskResponse update(@PathVariable Long id,
-                               @RequestBody TaskRequest request,
+                               @Valid @RequestBody TaskRequest request,
                                @AuthenticationPrincipal UserDetailsImpl currentUser) {
         return taskService.updateTask(id, request, currentUser);
     }
